@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -19,7 +19,7 @@ jobs:
       - run: git checkout ${{env.GIT_TAG}}
 
       - name: Create .zip
-        run: cd src/ && zip -r -q ../SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip .*
+        run: cd src/ && zip -r -q ../SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip .
 
       - name: Create Release
         id: create_release
