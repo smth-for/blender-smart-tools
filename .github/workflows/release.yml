@@ -19,7 +19,7 @@ jobs:
       - run: git checkout ${{env.GIT_TAG}}
 
       - name: Create .zip
-        run: cd src/ && zip -r -q ../SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip .
+        run: cp -r src SMTH_Blender_Smart_Tools && zip -r -q SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip SMTH_Blender_Smart_Tools
 
       - name: Create Release
         id: create_release
