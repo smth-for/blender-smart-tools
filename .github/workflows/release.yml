@@ -16,17 +16,28 @@ jobs:
 
       - run: echo "GIT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_ENV
 
-      - run: git checkout ${{env.GIT_TAG}}
+      - name: Generate release notes
+        run: echo "RELEASE_NOTES=$(git log -1 --pretty=format:%B)" >> $GITHUB_ENV
 
       - name: Escape folder name
         run: |
-          echo "UNDERSCORE_FOLDER_NAME=$(echo ${{ vars.FOLDER_NAME }} | sed 's/ /_/g')" >> $GITHUB_ENV
+            echo "ZIP_FILE_NAME=$(echo ${{ vars.FOLDER_NAME }}-${{ env.GIT_TAG }}.zip | sed 's/ /_/g')" >> $GITHUB_ENV
+
+      - run: git checkout ${{env.GIT_TAG}}
 
       - name: Create .zip
         run: |
           cp -r src "${{vars.FOLDER_NAME}}"
           cp README.md "${{vars.FOLDER_NAME}}"
-          zip -r -q ${{env.UNDERSCORE_FOLDER_NAME}}.zip "${{vars.FOLDER_NAME}}"
+          zip -r -q ${{env.ZIP_FILE_NAME}} "${{vars.FOLDER_NAME}}"
+
+
+      - name: Upload to Blender Extensions
+        run: |
+          curl -X POST https://extensions.blender.org/api/v1/extensions/${{vars.EXTENSION_ID}}/versions/upload/ \
+            -H "Authorization:bearer ${{secrets.API_KEY}}" \
+            -F "version_file=@${{env.ZIP_FILE_NAME}}" \
+            -F "release_notes=${{env.RELEASE_NOTES}}"
 
       - name: Create Release
         id: create_release
@@ -34,7 +45,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          body: ${{env.RELEASE_NOTES}}
           artifacts: |
-            ${{env.UNDERSCORE_FOLDER_NAME}}.zip
+            ${{env.ZIP_FILE_NAME}}
           draft: false
           prerelease: false
