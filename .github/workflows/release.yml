@@ -18,8 +18,15 @@ jobs:
 
       - run: git checkout ${{env.GIT_TAG}}
 
+      - name: Escape folder name
+        run: |
+          echo "UNDERSCORE_FOLDER_NAME=$(echo ${{ vars.FOLDER_NAME }} | sed 's/ /_/g')" >> $GITHUB_ENV
+
       - name: Create .zip
-        run: cd src/ && zip -r -q ../SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip .
+        run: |
+          cp -r src "${{vars.FOLDER_NAME}}"
+          cp README.md "${{vars.FOLDER_NAME}}"
+          zip -r -q ${{env.UNDERSCORE_FOLDER_NAME}}.zip "${{vars.FOLDER_NAME}}"
 
       - name: Create Release
         id: create_release
@@ -28,6 +35,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           artifacts: |
-            SMTH_Blender_Smart_Tools_${{env.GIT_TAG}}.zip
+            ${{env.UNDERSCORE_FOLDER_NAME}}.zip
           draft: false
           prerelease: false

@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+
+id = "SMTH_Smart_Tools"
+version = "1.0.1"
+name = "SMTH_Smart_Tools"
+tagline = "SMTH_Smart_Tools"
+maintainer = "Lorenzo Ronghi"
+type = "add-on"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+blender_version_min = "4.3.2"
