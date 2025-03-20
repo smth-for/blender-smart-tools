@@ -52,7 +52,7 @@ jobs:
 
       - name: Run update script
         run: |
-          node .github/scripts/update-distribution.js ${{vars.DISTRIBUTION_URL}} ${{secrets.API_KEY}} ${{vars.DISTRIBUTION_SLUG}} ${{env.ZIP_FILE_PATH}} $(pwd)/src/blender_manifest.toml
+          node .github/scripts/update-distribution.js ${{vars.SERVER_DISTRIBUTION_URL}} ${{secrets.SERVER_DISTRIBUTION_API_KEY}} ${{vars.DISTRIBUTION_SLUG}} ${{env.ZIP_FILE_PATH}} $(pwd)/src/blender_manifest.toml
 
       - name: Create Release
         id: create_release
