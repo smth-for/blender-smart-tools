@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
 
 jobs:
   release:
@@ -14,19 +15,45 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: echo "GIT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)" >> $GITHUB_ENV
-
-      - run: git checkout ${{env.GIT_TAG}}
-
-      - name: Escape folder name
+      - name: Download Blender
         run: |
-          echo "UNDERSCORE_FOLDER_NAME=$(echo ${{ vars.FOLDER_NAME }} | sed 's/ /_/g')" >> $GITHUB_ENV
+          wget ${{vars.BLENDER_RELEASE_URL}} -O blender.tar.xz
+          tar -xf blender.tar.xz
+          mv blender-* blender
 
-      - name: Create .zip
+      - name: Verify Blender installation
         run: |
-          cp -r src "${{vars.FOLDER_NAME}}"
-          cp README.md "${{vars.FOLDER_NAME}}"
-          zip -r -q ${{env.UNDERSCORE_FOLDER_NAME}}.zip "${{vars.FOLDER_NAME}}"
+          ./blender/blender --version
+
+      - name: Copy README.md
+        run: |
+          cp README.md src
+
+      - name: Create build folder
+        run: |
+          mkdir -p build
+
+      - name: Build addon
+        run: |
+          ./blender/blender -b --command extension build --source-dir=src --output-dir=./build
+
+      - name: Get blender file name from folder
+        id: get_blender_file_name
+        run: |
+          ZIP_FILE_NAME=$(ls build/*.zip)
+          echo "ZIP_FILE_PATH=$(pwd)/$ZIP_FILE_NAME" >> $GITHUB_ENV
+
+      - name: Generate release notes
+        run: echo "RELEASE_NOTES=$(git log -1 --pretty=format:%B)" >> $GITHUB_ENV
+
+      - name: Prepare script
+        run: |
+          cd .github/scripts
+          npm ci
+
+      - name: Run update script
+        run: |
+          node .github/scripts/update-distribution.js ${{vars.DISTRIBUTION_URL}} ${{secrets.API_KEY}} ${{vars.DISTRIBUTION_SLUG}} ${{env.ZIP_FILE_PATH}} $(pwd)/src/blender_manifest.toml
 
       - name: Create Release
         id: create_release
@@ -34,7 +61,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          body: ${{env.RELEASE_NOTES}}
           artifacts: |
-            ${{env.UNDERSCORE_FOLDER_NAME}}.zip
+            ${{env.ZIP_FILE_PATH}}
           draft: false
           prerelease: false
