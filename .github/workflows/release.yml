@@ -36,14 +36,15 @@ jobs:
         run: |
           ./blender/blender -b --command extension build --source-dir=src --output-dir=./build
 
-      - name: Get blender file name from folder
-        id: get_blender_file_name
+      - name: Get blender file path
+        id: get_blender_file_path
         run: |
-          ZIP_FILE_NAME=$(ls build/*.zip)
-          echo "ZIP_FILE_PATH=$(pwd)/$ZIP_FILE_NAME" >> $GITHUB_ENV
+          echo "::set-output name=output::$(pwd)/$(ls build/*.zip)"
 
       - name: Generate release notes
-        run: echo "RELEASE_NOTES=$(git log -1 --pretty=format:%B)" >> $GITHUB_ENV
+        id: generate_release_notes
+        run: |
+          echo "::set-output name=output::$(git log -1 --pretty=format:%B)"
 
       - name: Prepare script
         run: |
@@ -52,7 +53,7 @@ jobs:
 
       - name: Run update script
         run: |
-          node .github/scripts/update-distribution.js ${{vars.SERVER_DISTRIBUTION_URL}} ${{secrets.SERVER_DISTRIBUTION_API_KEY}} ${{vars.DISTRIBUTION_SLUG}} ${{env.ZIP_FILE_PATH}} $(pwd)/src/blender_manifest.toml
+          node .github/scripts/update-distribution.js ${{vars.SERVER_DISTRIBUTION_URL}} ${{secrets.SERVER_DISTRIBUTION_API_KEY}} ${{vars.DISTRIBUTION_SLUG}} ${{steps.get_blender_file_path.outputs.output}} $(pwd)/src/blender_manifest.toml
 
       - name: Create Release
         id: create_release
@@ -60,8 +61,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          body: ${{env.RELEASE_NOTES}}
+          body: ${{steps.generate_release_notes.outputs.output}}
           artifacts: |
-            ${{env.ZIP_FILE_PATH}}
+            ${{steps.get_blender_file_path.outputs.output}}
           draft: false
           prerelease: false
