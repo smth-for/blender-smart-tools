@@ -1806,100 +1806,58 @@ class OBJECT_OT_VertexGroupCreate(Operator):
         return {'FINISHED'}
     
 class OBJECT_OT_ExportMultipleOBJ(Operator, ExportHelper):
-    """Export objects as OBJ files"""
+    """Export selected objects as separate OBJ files per collection"""
     bl_idname = "export_scene.batch_obj"
     bl_label = "Multiple Export OBJ's"
     bl_options = {'PRESET', 'UNDO'}
     
-    # ExportHelper mixin class uses this
     filename_ext = ".obj"
 
     def execute(self, context):
         print('Multiple Export objects as OBJ files started!')
 
         wm = bpy.context.window_manager
-
-        # Export to blend file location
         basedir = os.path.dirname(self.filepath)
 
         if not basedir:
-            raise Exception("Blend file is not saved")
+            self.report({'ERROR'}, "Blend file is not saved")
+            return {'CANCELLED'}
 
         view_layer = bpy.context.view_layer
-
         obj_active = view_layer.objects.active
         selection = bpy.context.selected_objects
         
-        tot = len(selection)
-        progress = 0
-        wm.progress_begin(0, tot)
-
-        bpy.ops.object.select_all(action='DESELECT')
-
-        for obj in selection:
-            obj.select_set(True)
-
         collection_objects = {}
-
+        
         for obj in selection:
             for collection in obj.users_collection:
                 if collection.name not in collection_objects:
                     collection_objects[collection.name] = []
-
                 collection_objects[collection.name].append(obj)
-
+        
+        tot = len(collection_objects)
+        wm.progress_begin(0, tot)
+        progress = 0
+        
         for collection_name, objects in collection_objects.items():
             bpy.ops.object.select_all(action='DESELECT')
-
+            
             for obj in objects:
                 obj.select_set(True)
-
-                # Rename mesh with object name
-                mesh = obj.data
-                mesh.name = obj.name
-
-            fn = os.path.join(basedir, collection_name + self.filename_ext)
-            file_path = fn
-
-            # get the list of selected objects
-            oggetti_selezionati = bpy.context.selected_objects
-
-            # for each selected object
-            for oggetto in oggetti_selezionati:
-            # get object name
-                nome_oggetto = oggetto.name
-
-            for obj in bpy.data.objects:
-                if obj.type == 'MESH':
-                    obj.data.materials.clear()
-                
-            for obj in bpy.data.objects:
-                if obj.type == 'MESH':
-                    obj.data.materials.clear()
-                    material_name = obj.data.name
-                    new_material = bpy.data.materials.new(name=material_name)
-                    obj.data.materials.append(new_material)
-
-                    # Assign the new material to the object
-                    obj.active_material = new_material
-
-
-            # Create a new material with the same name as the object
-                new_mat = bpy.data.materials.new(name=nome_oggetto)
-                
-            # Assign the new material to the object
-                oggetto.active_material = new_mat
-
-            # Export objects in the collection
-            bpy.ops.wm.obj_export(filepath=file_path, export_selected_objects=False, filter_glob="*.obj")
-
-            print("Written:", fn)
-
+                obj.data.name = obj.name  # Ensure mesh name matches object name
+            
+            file_path = os.path.join(basedir, collection_name + self.filename_ext)
+            
+            bpy.ops.wm.obj_export(filepath=file_path, export_selected_objects=True, export_materials=False, filter_glob="*.obj")
+            print("Written:", file_path)
+            
+            progress += 1
+            wm.progress_update(progress)
+        
         view_layer.objects.active = obj_active
-
         for obj in selection:
             obj.select_set(True)
-
+        
         wm.progress_end()
         return {'FINISHED'}
 
@@ -2596,7 +2554,7 @@ class OBJECT_OT_UVCheckerGRID(Operator):
 
                     # Create the path to the image
                     addon_dir = get_path()
-                    image_path = os.path.join(addon_dir,"SMTH Smart Tools", "resources", 'UV_checker_GRID.png').replace("\\", "/")
+                    image_path = os.path.join(addon_dir,"SMTH_Smart_Tools", "resources", 'UV_checker_GRID.png').replace("\\", "/")
 
                     # Set the newly created image as the texture for the node
                     image_texture_node.image = bpy.data.images.load(image_path)
@@ -2673,7 +2631,7 @@ class OBJECT_OT_UVCheckerLINE(Operator):
                     
                     # Create path to the image
                     addon_dir = get_path()
-                    image_path = os.path.join(addon_dir,"SMTH Smart Tools", "resources", 'UV_checker_LINE.png').replace("\\", "/")
+                    image_path = os.path.join(addon_dir,"SMTH_Smart_Tools", "resources", 'UV_checker_LINE.png').replace("\\", "/")
 
                     bpy.data.images.load(image_path)
 
