@@ -119,17 +119,17 @@ class OBJECT_OT_CreateVertexColorLayers(Operator):
             context.view_layer.objects.active = obj
             
             # Crea i singoli canali RGBA se non esistono
-            color_layers = ["VERTEX R", "VERTEX G", "VERTEX B", "VERTEX A"]
+            color_layers = ["vertex_R", "vertex_G", "vertex_B", "vertex_A"]
             for color_layer_name in color_layers:
                 if color_layer_name not in obj.data.vertex_colors:
                     obj.data.vertex_colors.new(name=color_layer_name)
             
             # Crea il layer RGBA combinato se non esiste
-            if "VERTEX RGBA" not in obj.data.vertex_colors:
-                obj.data.vertex_colors.new(name="VERTEX RGBA")
+            if "vertex_RGBA" not in obj.data.vertex_colors:
+                obj.data.vertex_colors.new(name="vertex_RGBA")
             
-            # Imposta VERTEX RGBA come layer di rendering attivo per l'oggetto corrente
-            bpy.ops.geometry.color_attribute_render_set(name="VERTEX RGBA")
+            # Imposta vertex_RGBA come layer di rendering attivo per l'oggetto corrente
+            bpy.ops.geometry.color_attribute_render_set(name="vertex_RGBA")
         
         # Passa alla modalità Vertex Paint
         bpy.ops.object.mode_set(mode='VERTEX_PAINT')
@@ -153,7 +153,7 @@ class OBJECT_OT_CombineVertexColors(Operator):
         
         for obj in mesh_objects:
             # Verifica la presenza dei layer necessari
-            required_layers = ["VERTEX R", "VERTEX G", "VERTEX B", "VERTEX A"]
+            required_layers = ["vertex_R", "vertex_G", "vertex_B", "vertex_A"]
             missing_layers = [layer for layer in required_layers if layer not in obj.data.vertex_colors]
             
             if missing_layers:
@@ -162,16 +162,16 @@ class OBJECT_OT_CombineVertexColors(Operator):
                 continue
             
             # Crea o ottiene il layer RGBA
-            if "VERTEX RGBA" not in obj.data.vertex_colors:
-                rgba_layer = obj.data.vertex_colors.new(name="VERTEX RGBA")
+            if "vertex_RGBA" not in obj.data.vertex_colors:
+                rgba_layer = obj.data.vertex_colors.new(name="vertex_RGBA")
             else:
-                rgba_layer = obj.data.vertex_colors["VERTEX RGBA"]
+                rgba_layer = obj.data.vertex_colors["vertex_RGBA"]
             
             # Ottiene i riferimenti ai layer esistenti
-            r_layer = obj.data.vertex_colors["VERTEX R"]
-            g_layer = obj.data.vertex_colors["VERTEX G"]
-            b_layer = obj.data.vertex_colors["VERTEX B"]
-            a_layer = obj.data.vertex_colors["VERTEX A"]
+            r_layer = obj.data.vertex_colors["vertex_R"]
+            g_layer = obj.data.vertex_colors["vertex_G"]
+            b_layer = obj.data.vertex_colors["vertex_B"]
+            a_layer = obj.data.vertex_colors["vertex_A"]
             
             # Combina i colori
             for poly in obj.data.polygons:
@@ -184,7 +184,7 @@ class OBJECT_OT_CombineVertexColors(Operator):
             
             # Imposta il layer RGBA come quello di rendering
             bpy.context.view_layer.objects.active = obj
-            bpy.ops.geometry.color_attribute_render_set(name="VERTEX RGBA")
+            bpy.ops.geometry.color_attribute_render_set(name="vertex_RGBA")
         
         bpy.ops.object.mode_set(mode='VERTEX_PAINT')
         return {'FINISHED'}
@@ -1384,34 +1384,34 @@ class OBJECT_OT_VertexColorWind(Operator):
             obj.vertex_groups.active_index = vgroup.index
 
             if not obj.data.vertex_colors:
-                obj.data.vertex_colors.new(name="VERTEX R")
+                obj.data.vertex_colors.new(name="vertex_R")
             else:
-                obj.data.vertex_colors[0].name = "VERTEX R"
+                obj.data.vertex_colors[0].name = "vertex_R"
 
-            color_layers = ["VERTEX G", "VERTEX B", "VERTEX A"]
+            color_layers = ["vertex_G", "vertex_B", "vertex_A"]
             for color_layer_name in color_layers:
                 if color_layer_name not in obj.data.vertex_colors:
                     obj.data.vertex_colors.new(name=color_layer_name)
 
         bpy.ops.object.mode_set(mode='VERTEX_PAINT')
         for obj in mesh_objects:
-            if "VERTEX R" in obj.data.vertex_colors:
-                obj.data.vertex_colors.active = obj.data.vertex_colors["VERTEX R"]
+            if "vertex_R" in obj.data.vertex_colors:
+                obj.data.vertex_colors.active = obj.data.vertex_colors["vertex_R"]
                 bpy.context.view_layer.objects.active = obj
                 bpy.ops.paint.vertex_color_from_weight()
             else:
-                self.report({'ERROR'}, f"The object {obj.name} does not have a color layer called 'VERTEX R'.")
+                self.report({'ERROR'}, f"The object {obj.name} does not have a color layer called 'vertex_R'.")
 
         for obj in mesh_objects:
-            if "VERTEX RGBA" not in obj.data.vertex_colors:
-                rgba_layer = obj.data.vertex_colors.new(name="VERTEX RGBA")
+            if "vertex_RGBA" not in obj.data.vertex_colors:
+                rgba_layer = obj.data.vertex_colors.new(name="vertex_RGBA")
             else:
-                rgba_layer = obj.data.vertex_colors["VERTEX RGBA"]
+                rgba_layer = obj.data.vertex_colors["vertex_RGBA"]
             
-            r_layer = obj.data.vertex_colors.get("VERTEX R")
-            g_layer = obj.data.vertex_colors.get("VERTEX G")
-            b_layer = obj.data.vertex_colors.get("VERTEX B")
-            a_layer = obj.data.vertex_colors.get("VERTEX A")
+            r_layer = obj.data.vertex_colors.get("vertex_R")
+            g_layer = obj.data.vertex_colors.get("vertex_G")
+            b_layer = obj.data.vertex_colors.get("vertex_B")
+            a_layer = obj.data.vertex_colors.get("vertex_A")
             
             if not (r_layer and g_layer and b_layer and a_layer):
                 self.report({'ERROR'}, f"One or more color channels are missing in '{obj.name}'.")
@@ -1427,7 +1427,7 @@ class OBJECT_OT_VertexColorWind(Operator):
 
         bpy.ops.object.mode_set(mode='VERTEX_PAINT')
         for obj in mesh_objects:
-            bpy.ops.geometry.color_attribute_render_set(name="VERTEX RGBA")
+            bpy.ops.geometry.color_attribute_render_set(name="vertex_RGBA")
 
         return {'FINISHED'}
     

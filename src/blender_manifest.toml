@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "SMTH_Smart_Tools"
-version = "1.0.2"
+version = "1.0.3"
 name = "SMTH_Smart_Tools"
 tagline = "SMTH_Smart_Tools"
 maintainer = "Lorenzo Ronghi"
